@@ -1,29 +1,54 @@
 import os
 import sys
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, TIMESTAMP
 from sqlalchemy.orm import relationship, declarative_base
 from sqlalchemy import create_engine
 from eralchemy2 import render_er
 
 Base = declarative_base()
 
-class Person(Base):
-    __tablename__ = 'person'
-    # Here we define columns for the table person
-    # Notice that each column is also a normal Python instance attribute.
-    id = Column(Integer, primary_key=True)
-    name = Column(String(250), nullable=False)
+class Usuario(Base):
+    __tablename__ = 'usuario'
 
-class Address(Base):
-    __tablename__ = 'address'
-    # Here we define columns for the table address.
-    # Notice that each column is also a normal Python instance attribute.
+    id_usuario = Column(Integer, primary_key=True)
+    nombre = Column(String(250), nullable=False)
+    correo = Column(String(250), nullable=False)
+    password = Column(String(250), nullable=False)
+    fecha = Column(TIMESTAMP, nullable = False)
+
+    posts = relationship('Post', backref='usuario', lazy=True)
+    comentarios = relationship('Comentario', backref='usuario', lazy=True)
+    likes = relationship('Like', backref='usuario', lazy=True)
+
+
+class Comentario(Base):
+    __tablename__ = 'comentario'
+
+    id_comentario = Column(Integer, primary_key=True)
+    usuario_id = Column(Integer, ForeignKey('usuario.id'), nullable=False)
+    post_id = Column(Integer, ForeignKey('posts.id'), nullable=False)
+    texto = Column(String(250), nullable=False)
+    fecha = Column(TIMESTAMP, nullable = False)
+
+class Like(Base):
+    __tablename__ = 'like'
+    
     id = Column(Integer, primary_key=True)
-    street_name = Column(String(250))
-    street_number = Column(String(250))
-    post_code = Column(String(250), nullable=False)
-    person_id = Column(Integer, ForeignKey('person.id'))
-    person = relationship(Person)
+    usuario_id = Column(Integer, ForeignKey('usuario.id'), nullable=False)
+    post_id = Column(Integer, ForeignKey('post.id'), nullable=False)
+    fecha = Column(TIMESTAMP, nullable = False)
+    
+class Post(Base):
+    __tablename__ = 'post'
+    
+    id = Column(Integer, primary_key=True)
+    usuario_id = Column(Integer, ForeignKey('usuario.id'), nullable=False)
+    caption = Column(String)
+    image_url = Column(String(250), nullable=False)
+    fecha = Column(TIMESTAMP, nullable = False)
+    
+    comentarios = relationship('Comentario', backref='post', lazy=True)
+    likes = relationship('Like', backref='post', lazy=True)
 
     def to_dict(self):
         return {}
